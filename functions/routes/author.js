@@ -1,5 +1,5 @@
 const express = require('express');
-const InventoryModel = require('../models/inventory'); // Assuming you have a model for inventory items
+const InventoryModel = require('../models/author'); // Assuming you have a model for inventory items
 
 const router = express.Router();
 
