@@ -1,84 +1,72 @@
 const express = require('express');
-const AuthorModel = require('../models/author');
+const InventoryModel = require('../models/inventory'); // Assuming you have a model for inventory items
 
 const router = express.Router();
-// GET all authors
+
+// GET all inventory items
 router.get('/', async (req, res) => {
     try {
-        const authors = await AuthorModel.find();
-        res.json(authors);
+        const inventory = await InventoryModel.find();
+        res.json(inventory);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
-// GET a single author
-router.get('/:id', getAuthor, (req, res) => { 
-    res.json(res.author);
+
+// GET a single inventory item by ID
+router.get('/:id', getInventoryItem, (req, res) => {
+    res.json(res.inventoryItem);
 });
 
-// Create a new author
+// Create a new inventory item
 router.post('/', async (req, res) => {
     try {
-        // Validate request body
-        if (!req.body.name || !req.body.age) {
-            return res.status(400).json({ message: 'Name and age are required' });
+        const { name, quantity, reorderPoint } = req.body;
+        if (!name || !quantity || !reorderPoint) {
+            return res.status(400).json({ message: 'Name, quantity, and reorder point are required' });
         }
         
-        // Check if the author's name already exists
-        const existingAuthor = await AuthorModel.findOne({ name: req.body.name });
-        if (existingAuthor) {
-            return res.status(400).json({ message: 'Author already exists' });
+        const existingItem = await InventoryModel.findOne({ name });
+        if (existingItem) {
+            return res.status(400).json({ message: 'Item already exists' });
         }
         
-        const author = new AuthorModel(req.body);
-        const newAuthor = await author.save();
-        res.status(201).json({ message: 'Author created successfully', author: newAuthor });
+        const newItem = new InventoryModel({ name, quantity, reorderPoint });
+        const savedItem = await newItem.save();
+        res.status(201).json({ message: 'Item created successfully', item: savedItem });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 });
 
-// Update an existing author partially
-router.patch('/:id', getAuthor, async (req, res) => {
+// Update an existing inventory item
+router.put('/:id', getInventoryItem, async (req, res) => {
     try {
-        if (req.body.name !== undefined) {
-            res.author.name = req.body.name;
-        }
-        const updatedAuthor = await res.author.save();
-        res.json(updatedAuthor);
+        const updatedItem = await InventoryModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedItem);
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 });
 
-// Update an existing author completely
-router.put('/:id', getAuthor, async (req, res) => {
+// Delete an inventory item
+router.delete('/:id', getInventoryItem, async (req, res) => {
     try {
-        const updatedAuthor = await AuthorModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedAuthor);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-});
-
-// Delete an author
-router.delete('/:id', getAuthor, async (req, res) => {
-    try {
-        await res.author.remove();
-        res.json({ message: 'Author deleted' });
+        await res.inventoryItem.deleteOne();
+        res.json({ message: 'Item deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// Middleware function to get a single author by ID
-async function getAuthor(req, res, next) {
+// Middleware function to get a single inventory item by ID
+async function getInventoryItem(req, res, next) {
     try {
-        const author = await AuthorModel.findById(req.params.id);
-        if (!author) {
-            return res.status(404).json({ message: 'Author not found' }); 
+        const inventoryItem = await InventoryModel.findById(req.params.id);
+        if (!inventoryItem) {
+            return res.status(404).json({ message: 'Inventory item not found' });
         }
-        res.author = author;
+        res.inventoryItem = inventoryItem;
         next();
     } catch (err) {
         res.status(500).json({ message: err.message });
