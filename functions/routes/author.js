@@ -1,5 +1,5 @@
 const express = require('express');
-const InventoryItemModel = require('../models/inventory');
+const InventoryItemModel = require('../models/author');
 const router = express.Router();
 
 // GET all inventory items

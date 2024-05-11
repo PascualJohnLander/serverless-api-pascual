@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const inventorySchema = require('../schema/inventory'); 
+const inventorySchema = require('../schema/author'); 
 
 const InventoryModel = mongoose.model('Inventory', inventorySchema);
 
